@@ -6,7 +6,7 @@
 /*   By: lhasmi <lhasmi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/07 20:15:50 by lhasmi            #+#    #+#             */
-/*   Updated: 2023/07/15 13:18:50 by lhasmi           ###   ########.fr       */
+/*   Updated: 2023/07/15 16:21:40 by lhasmi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,7 @@ typedef struct s_philosophers
 	int				id;
 	long long		last_time_to_eat;
 	pthread_t		thread;
+	// pthread_t       dmonitor_thread;
 	pthread_mutex_t	*left_fork;
 	pthread_mutex_t	*right_fork;
 	t_data			*data;
