@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "Philo",
+			"path": "../Philo"
+		},
+		{
+			"name": "philo42",
+			"path": "."
+		}
+	],
+	"settings": {}
+}

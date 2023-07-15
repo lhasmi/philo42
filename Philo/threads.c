@@ -6,7 +6,7 @@
 /*   By: lhasmi <lhasmi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/07 20:00:27 by lhasmi            #+#    #+#             */
-/*   Updated: 2023/07/14 23:37:42 by lhasmi           ###   ########.fr       */
+/*   Updated: 2023/07/15 13:20:23 by lhasmi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,10 @@
 // just keep eating, sleeping, and thinking in a loop forever.
 // I need to handel the death of philosophers
 // I need to prevent data racing and deadlock
-long	is_timenow(void)
+
+
+
+long long	is_timenow(void)
 {
 	struct timeval	timenow;
 
@@ -29,15 +32,19 @@ long	is_timenow(void)
 	return (timenow.tv_sec * 1000 + timenow.tv_usec / 1000);
 }
 
-void	ft_usleep(long time)
+// ft_usleep looks good! You can also check for the time of death in there
+// and for some edge case protection.
+void	ft_usleep(long long time)
 {
-	long start_time;
+	long long start_time;
 
 	start_time = is_timenow();
 	while (is_timenow() - start_time < time)
 		usleep(time);
 }
 
+// printing function looks good, but you can imrpove it with a check that makes sure taht mutex is not dead already,
+// and for some edge case protection
 void	printing(t_philosophers *philosopher, char *msg)
 {
 	pthread_mutex_lock(&philosopher->data->write);
@@ -50,11 +57,19 @@ void	printing(t_philosophers *philosopher, char *msg)
 	pthread_mutex_unlock(&philosopher->data->write);
 }
 
+// Also you need to sync the philosophers somehow, before the while(1) loop
+
+// You can do so with a mutex lock
 void	*routine(void *arg)
 {
 	t_philosophers	*philosophers;
 
 	philosophers = (t_philosophers *)arg;
+	// Wait for the start condition
+	pthread_mutex_lock(&philosophers->data->start_mutex);
+	pthread_cond_wait(&philosophers->data->start_condition, &philosophers->data->start_mutex);
+	pthread_mutex_unlock(&philosophers->data->start_mutex);
+
 	while (1)
 	{
 		// check flag data.dead
@@ -66,7 +81,7 @@ void	*routine(void *arg)
 		pthread_mutex_lock(philosophers->right_fork);
 		// print eating (print function calls is_timenow)
 		printing(philosophers, "eating");
-		philosophers->last_time_to_eat = get_time(); // Assume get_time is a function that gets current time
+		philosophers->last_time_to_eat = is_timenow(); // get_time is a function that gets current time
 		// call ft_usleep
 		ft_usleep(philosophers->data->time_to_eat);
 		pthread_mutex_unlock(philosophers->left_fork);
@@ -85,13 +100,15 @@ void	*routine(void *arg)
 			break;
 
 		// Philosopher is thinking
-		printing(philosophers, "is thinking");	}
+		printing(philosophers, "is thinking");
+		}
 	return NULL;
 }
 
 int	main(int argc, char *argv[])
 {
 	t_data data;
+	data.dead = false;
 	int num_philosophers = atoi(argv[1]);
 	pthread_mutex_t	forks[num_philosophers];
 	t_philosophers	*philosophers = (t_philosophers *)malloc(sizeof(t_philosophers) * num_philosophers);
@@ -105,6 +122,9 @@ int	main(int argc, char *argv[])
 		printf("Arguments: number_of_philosophers, time_to_die, time_to_eat, time_to_sleep, [number_of_times_each_philosopher_must_eat]\n");
 		return (1);
 	}
+	pthread_mutex_init(&data.start_mutex, NULL);
+	pthread_cond_init(&data.start_condition, NULL);
+	pthread_mutex_lock(&data.start_mutex);
 
 	while ( i < num_philosophers)
 	{
@@ -112,6 +132,7 @@ int	main(int argc, char *argv[])
 		i++;
 	}
 
+	// Init looks good might add a protection to it tho
 	pthread_mutex_init(&data.write, NULL);
 
 	data.start = is_timenow(); // Set start_time for data.
@@ -132,6 +153,10 @@ int	main(int argc, char *argv[])
 			return (2);
 		i++;
 	}
+	// Now that all threads are created, unlock the start mutex and broadcast the start condition
+	pthread_mutex_unlock(&data.start_mutex);
+	pthread_cond_broadcast(&data.start_condition);
+
 	i = 0;
 	while (i < num_philosophers)
 	{
@@ -146,7 +171,8 @@ int	main(int argc, char *argv[])
 		i++;
 	}
 	pthread_mutex_destroy(&data.write);
-
+	pthread_cond_destroy(&data.start_condition);
+	pthread_mutex_destroy(&data.start_mutex);
 	free(philosophers);
 	return (0);
 }
