@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   philo.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lhasmi <lhasmi@student.42.fr>              +#+  +:+       +#+        */
+/*   By: lhasmi <lhasmi@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/07 20:15:50 by lhasmi            #+#    #+#             */
-/*   Updated: 2023/07/15 16:21:40 by lhasmi           ###   ########.fr       */
+/*   Updated: 2023/07/16 22:01:18 by lhasmi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 # include <pthread.h>
 # include <stdio.h>
 # include <stdlib.h>
+# include <string.h>
 # include <unistd.h>
 # include <stdbool.h>
 # include <sys/time.h>
@@ -73,13 +74,22 @@ typedef struct s_data
 	int					meals_required;
 	long long			start;
 	pthread_mutex_t		write;
-	pthread_mutex_t		start_mutex; // Mutex for the start condition
-	pthread_cond_t		start_condition; // Start condition
+	pthread_mutex_t		dead_mutex;  // New mutex for protecting 'dead' variable
+	pthread_mutex_t		eat_mutex;  
 }				t_data;
 
 void				*routine(void *arg);
-void				ft_usleep(long long time);
+void				eating_cycle(t_philosophers *philosophers);
+void				sleeping_cycle(t_philosophers *philosophers);
+bool				is_philosopher_dead(t_philosophers *philosophers);
+void				initialize_philosophers_and_forks(t_philosophers *philosophers, t_data *data, pthread_mutex_t *forks, int num_philosophers);
+
+/////////// philooutils.c  /////////
+void				sync_start(t_philosophers *philosophers);
 long long			is_timenow(void);
+void				ft_usleep(long time);
 void				printing(t_philosophers *philosopher, char *msg);
+void				check_death(t_philosophers *philosophers, char *action);
+void				clean_up(t_philosophers *philosophers, t_data *data, pthread_mutex_t *forks, int num_philosophers);
 
 #endif

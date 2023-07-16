@@ -3,16 +3,16 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: lhasmi <lhasmi@student.42.fr>              +#+  +:+       +#+         #
+#    By: lhasmi <lhasmi@student.42heilbronn.de>     +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/12/31 18:14:12 by lhasmi            #+#    #+#              #
-#    Updated: 2023/07/08 17:41:21 by lhasmi           ###   ########.fr        #
+#    Updated: 2023/07/16 20:39:34 by lhasmi           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME	= philo
 
-SRCS	= threads.c
+SRCS	= threads.c philoutils.c
 
 OBJS	= $(SRCS:.c=.o)
 CC		= gcc
