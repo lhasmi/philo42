@@ -6,7 +6,7 @@
 /*   By: lhasmi <lhasmi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/07 20:00:27 by lhasmi            #+#    #+#             */
-/*   Updated: 2023/07/17 15:12:15 by lhasmi           ###   ########.fr       */
+/*   Updated: 2023/07/17 16:16:12 by lhasmi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,25 +14,27 @@
 
 void	eating_cycle(t_philosophers *philosophers)
 {
+	check_death(philosophers);
 	pthread_mutex_lock(philosophers->left_fork);
 	pthread_mutex_lock(philosophers->right_fork);
 	printing(philosophers, "is eating");
 
-	pthread_mutex_lock(&philosophers->data->eat_mutex);  // Lock 'eat_mutex'
+	// pthread_mutex_lock(&philosophers->data->eat_mutex);  // Lock 'eat_mutex'
 	philosophers->last_time_to_eat = is_timenow();
-	pthread_mutex_unlock(&philosophers->data->eat_mutex);  // Unlock 'eat_mutex'
+	// pthread_mutex_unlock(&philosophers->data->eat_mutex);  // Unlock 'eat_mutex'
 
 	ft_usleep(philosophers->data->time_to_eat);
 	pthread_mutex_unlock(philosophers->left_fork);
 	pthread_mutex_unlock(philosophers->right_fork);
-	check_death(philosophers);
 }
 
 
 void	sleeping_cycle(t_philosophers *philosophers)
 {
+	check_death(philosophers);
 	printing(philosophers, "is sleeping");
 	ft_usleep(philosophers->data->time_to_sleep);
+
 }
 
 bool	is_philosopher_dead(t_philosophers *philosophers)
@@ -50,38 +52,31 @@ void	*routine(void *arg)
 {
 	t_philosophers	*philosophers = (t_philosophers *)arg;
 	sync_start(philosophers);
+	if (philosophers->id % 2 != 0) // if philosopher's id is odd, let them sleep first.
+		ft_usleep(philosophers->data->time_to_eat);
 	while (1)
 	{
-		if (philosophers->id % 2 == 0)
-		{
-			check_death(philosophers);
-			if (is_philosopher_dead(philosophers))
-				break;
-			eating_cycle(philosophers);
-			check_death(philosophers);
-			if (is_philosopher_dead(philosophers))
-				break;
-			sleeping_cycle(philosophers);
-			check_death(philosophers);
-			if (is_philosopher_dead(philosophers))
-				break;
-		}
-		else
-		{
-			check_death(philosophers);
-			if (is_philosopher_dead(philosophers))
-				break;
-			sleeping_cycle(philosophers);
-			check_death(philosophers);
-			if (is_philosopher_dead(philosophers))
-				break;
-			eating_cycle(philosophers);
-			check_death(philosophers);
-			if (is_philosopher_dead(philosophers))
-				break;
-		}
+		// if (philosophers->id % 2 == 0)
+		// {
+		eating_cycle(philosophers);
+		if (is_philosopher_dead(philosophers))
+			break;
+		sleeping_cycle(philosophers);
+		if (is_philosopher_dead(philosophers))
+			break;
+		// }
+		// else
+		// {
+		// 	sleeping_cycle(philosophers);
+		// 	if (is_philosopher_dead(philosophers))
+		// 		break;
+		// 	eating_cycle(philosophers);
+		// 	if (is_philosopher_dead(philosophers))
+		// 		break;
+		// }
 		printing(philosophers, "is thinking");
 		check_death(philosophers);
+		// printf("Philosopher  says hi\n");
 		if (is_philosopher_dead(philosophers))
 			break;
 	}
@@ -110,8 +105,6 @@ void	initialize_philosophers_and_forks(t_philosophers *philosophers, t_data *dat
 		philosophers[i].right_fork = &forks[(i + 1) % num_philosophers];
 		philosophers[i].data = data;
 		philosophers[i].last_time_to_eat = data->start;
-		if (i % 2 != 0) // if philosopher's id is odd, let them sleep first.
-			ft_usleep(philosophers[i].data->time_to_eat);
 		if (pthread_create(&philosophers[i].thread, NULL, &routine,
 				&philosophers[i]) != 0)
 			exit(2);

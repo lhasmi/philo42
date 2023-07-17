@@ -6,7 +6,7 @@
 /*   By: lhasmi <lhasmi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/16 20:39:40 by lhasmi            #+#    #+#             */
-/*   Updated: 2023/07/17 15:08:54 by lhasmi           ###   ########.fr       */
+/*   Updated: 2023/07/17 16:16:52 by lhasmi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ void	ft_usleep(long time)
 void	printing(t_philosophers *philosopher, char *msg)
 {
 	pthread_mutex_lock(&philosopher->data->write);
-	if (!philosopher->data->dead)
+	if (philosopher->data->dead)
 	{
 		printf("%lld Philosopher %d %s\n",
 			is_timenow() - philosopher->data->start,
@@ -49,19 +49,18 @@ void	printing(t_philosophers *philosopher, char *msg)
 }
 
 void	check_death(t_philosophers *philosophers)
-{
-	pthread_mutex_lock(&philosophers->data->eat_mutex);  // Lock 'eat_mutex'
+{ // Lock 'eat_mutex'
 	long long time_since_last_eat = is_timenow() - philosophers->last_time_to_eat;
 	long long time_since_start = is_timenow() - philosophers->data->start;
-	pthread_mutex_unlock(&philosophers->data->eat_mutex);  // Unlock 'eat_mutex'
+	// printf("Philosopher  says hi before if\n");
 
 	if (time_since_last_eat > philosophers->data->time_to_die || time_since_start > philosophers->data->time_to_die)
 	{
 		pthread_mutex_lock(&philosophers->data->dead_mutex);  // Lock 'dead_mutex'
 		philosophers->data->dead = true;
 		pthread_mutex_unlock(&philosophers->data->dead_mutex);  // Unlock 'dead_mutex'
+		// printf("Philosopher  says hi after if\n");
 		printing(philosophers, "died");
-		exit(0);
 	}
 }
 
