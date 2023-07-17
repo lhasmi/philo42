@@ -6,12 +6,24 @@
 /*   By: lhasmi <lhasmi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/16 20:39:40 by lhasmi            #+#    #+#             */
-/*   Updated: 2023/07/17 16:16:52 by lhasmi           ###   ########.fr       */
+/*   Updated: 2023/07/17 20:00:05 by lhasmi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
+
+// bool all_alive(t_philosophers *philosophers, int num_philosophers)
+// {
+// 	int i = 0;
+// 	while (i < num_philosophers)
+// 	{
+// 		if (is_philosopher_dead(&philosophers[i]))
+// 			return false;
+// 		i++;
+// 	}
+// 	return true;
+// }
 
 void	sync_start(t_philosophers *philosophers)
 {
@@ -32,14 +44,21 @@ void	ft_usleep(long time)
 	long long start_time;
 
 	start_time = is_timenow();
-	while (is_timenow() - start_time < time)
-		usleep(time);
+	while (is_timenow() < time + start_time)
+		usleep(10);
 }
 
 void	printing(t_philosophers *philosopher, char *msg)
 {
 	pthread_mutex_lock(&philosopher->data->write);
-	if (philosopher->data->dead)
+	if (is_philosopher_dead(philosopher))
+	{
+		printf("%lld Philosopher %d %s\n",
+			is_timenow() - philosopher->data->start,
+			philosopher->id, msg);
+		exit(1);
+	}
+	else
 	{
 		printf("%lld Philosopher %d %s\n",
 			is_timenow() - philosopher->data->start,
@@ -51,10 +70,12 @@ void	printing(t_philosophers *philosopher, char *msg)
 void	check_death(t_philosophers *philosophers)
 { // Lock 'eat_mutex'
 	long long time_since_last_eat = is_timenow() - philosophers->last_time_to_eat;
+	printf("philo id %d  time since last eat: %lld\n", philosophers->id, time_since_last_eat);
 	long long time_since_start = is_timenow() - philosophers->data->start;
+	printf("philo id %d  time since start: %lld\n", philosophers->id, time_since_start);
 	// printf("Philosopher  says hi before if\n");
 
-	if (time_since_last_eat > philosophers->data->time_to_die || time_since_start > philosophers->data->time_to_die)
+	if (time_since_last_eat > philosophers->data->time_to_die || (time_since_start > philosophers->data->time_to_die && philosophers->nb_eat == 0))
 	{
 		pthread_mutex_lock(&philosophers->data->dead_mutex);  // Lock 'dead_mutex'
 		philosophers->data->dead = true;
@@ -63,7 +84,6 @@ void	check_death(t_philosophers *philosophers)
 		printing(philosophers, "died");
 	}
 }
-
 
 void	clean_up(t_philosophers *philosophers, t_data *data, pthread_mutex_t *forks, int num_philosophers)
 {

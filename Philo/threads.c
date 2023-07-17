@@ -6,7 +6,7 @@
 /*   By: lhasmi <lhasmi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/07 20:00:27 by lhasmi            #+#    #+#             */
-/*   Updated: 2023/07/17 16:16:12 by lhasmi           ###   ########.fr       */
+/*   Updated: 2023/07/17 20:01:55 by lhasmi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,8 @@ void	eating_cycle(t_philosophers *philosophers)
 	// pthread_mutex_lock(&philosophers->data->eat_mutex);  // Lock 'eat_mutex'
 	philosophers->last_time_to_eat = is_timenow();
 	// pthread_mutex_unlock(&philosophers->data->eat_mutex);  // Unlock 'eat_mutex'
-
+	if(!is_philosopher_dead(philosophers))
+		philosophers->nb_eat++;
 	ft_usleep(philosophers->data->time_to_eat);
 	pthread_mutex_unlock(philosophers->left_fork);
 	pthread_mutex_unlock(philosophers->right_fork);
@@ -100,11 +101,12 @@ void	initialize_philosophers_and_forks(t_philosophers *philosophers, t_data *dat
 	i = 0;
 	while (i < num_philosophers)
 	{
-		philosophers[i].id = i;
+		philosophers[i].id = i + 1;
 		philosophers[i].left_fork = &forks[i];
 		philosophers[i].right_fork = &forks[(i + 1) % num_philosophers];
 		philosophers[i].data = data;
 		philosophers[i].last_time_to_eat = data->start;
+		philosophers[i].nb_eat = 0;
 		if (pthread_create(&philosophers[i].thread, NULL, &routine,
 				&philosophers[i]) != 0)
 			exit(2);
@@ -128,6 +130,7 @@ int	main(int argc, char *argv[])
 	pthread_mutex_t	forks[num_philosophers];
 	t_data *data = (t_data *)malloc(sizeof(t_data));
 	data->dead = false;
+	data->num_philosophers = num_philosophers;
 	data->time_to_die = atoll(argv[2]);
 	data->time_to_eat = atoll(argv[3]);
 	data->time_to_sleep = atoll(argv[4]);
