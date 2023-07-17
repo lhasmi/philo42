@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   philo.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lhasmi <lhasmi@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: lhasmi <lhasmi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/07 20:15:50 by lhasmi            #+#    #+#             */
-/*   Updated: 2023/07/16 22:01:18 by lhasmi           ###   ########.fr       */
+/*   Updated: 2023/07/17 14:58:52 by lhasmi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,7 @@ typedef struct s_data
 	long long			start;
 	pthread_mutex_t		write;
 	pthread_mutex_t		dead_mutex;  // New mutex for protecting 'dead' variable
-	pthread_mutex_t		eat_mutex;  
+	pthread_mutex_t		eat_mutex;
 }				t_data;
 
 void				*routine(void *arg);
@@ -89,7 +89,7 @@ void				sync_start(t_philosophers *philosophers);
 long long			is_timenow(void);
 void				ft_usleep(long time);
 void				printing(t_philosophers *philosopher, char *msg);
-void				check_death(t_philosophers *philosophers, char *action);
+void				check_death(t_philosophers *philosophers);
 void				clean_up(t_philosophers *philosophers, t_data *data, pthread_mutex_t *forks, int num_philosophers);
 
 #endif

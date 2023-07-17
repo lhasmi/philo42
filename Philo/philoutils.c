@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   philoutils.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lhasmi <lhasmi@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: lhasmi <lhasmi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/16 20:39:40 by lhasmi            #+#    #+#             */
-/*   Updated: 2023/07/16 22:02:50 by lhasmi           ###   ########.fr       */
+/*   Updated: 2023/07/17 15:08:54 by lhasmi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,27 +48,23 @@ void	printing(t_philosophers *philosopher, char *msg)
 	pthread_mutex_unlock(&philosopher->data->write);
 }
 
-void	check_death(t_philosophers *philosophers, char *action)
+void	check_death(t_philosophers *philosophers)
 {
 	pthread_mutex_lock(&philosophers->data->eat_mutex);  // Lock 'eat_mutex'
 	long long time_since_last_eat = is_timenow() - philosophers->last_time_to_eat;
+	long long time_since_start = is_timenow() - philosophers->data->start;
 	pthread_mutex_unlock(&philosophers->data->eat_mutex);  // Unlock 'eat_mutex'
 
-	if ((time_since_last_eat + philosophers->data->time_to_eat) > philosophers->data->time_to_die)
+	if (time_since_last_eat > philosophers->data->time_to_die || time_since_start > philosophers->data->time_to_die)
 	{
 		pthread_mutex_lock(&philosophers->data->dead_mutex);  // Lock 'dead_mutex'
 		philosophers->data->dead = true;
 		pthread_mutex_unlock(&philosophers->data->dead_mutex);  // Unlock 'dead_mutex'
 		printing(philosophers, "died");
-	}
-	else if ((time_since_last_eat + philosophers->data->time_to_sleep) > philosophers->data->time_to_die && strcmp(action, "sleeping") == 0)
-	{
-		pthread_mutex_lock(&philosophers->data->dead_mutex);  // Lock 'dead_mutex'
-		philosophers->data->dead = true;
-		pthread_mutex_unlock(&philosophers->data->dead_mutex);  // Unlock 'dead_mutex'
-		printing(philosophers, "died");
+		exit(0);
 	}
 }
+
 
 void	clean_up(t_philosophers *philosophers, t_data *data, pthread_mutex_t *forks, int num_philosophers)
 {
