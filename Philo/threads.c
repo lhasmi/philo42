@@ -6,7 +6,7 @@
 /*   By: lhasmi <lhasmi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/07 20:00:27 by lhasmi            #+#    #+#             */
-/*   Updated: 2023/07/17 20:01:55 by lhasmi           ###   ########.fr       */
+/*   Updated: 2023/07/17 22:43:35 by lhasmi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ void	eating_cycle(t_philosophers *philosophers)
 	printing(philosophers, "is eating");
 
 	// pthread_mutex_lock(&philosophers->data->eat_mutex);  // Lock 'eat_mutex'
-	philosophers->last_time_to_eat = is_timenow();
+	philosophers->last_time_to_eat = is_timenow();//+ time to sleep > time to die
 	// pthread_mutex_unlock(&philosophers->data->eat_mutex);  // Unlock 'eat_mutex'
 	if(!is_philosopher_dead(philosophers))
 		philosophers->nb_eat++;
@@ -33,9 +33,28 @@ void	eating_cycle(t_philosophers *philosophers)
 void	sleeping_cycle(t_philosophers *philosophers)
 {
 	check_death(philosophers);
-	printing(philosophers, "is sleeping");
-	ft_usleep(philosophers->data->time_to_sleep);
+	if(philosophers->last_time_to_eat + philosophers->data->time_to_sleep > philosophers->data->time_to_die)
+	{
+		// printf("philosophers->data->time_to_die: %lld\n", philosophers->data->time_to_die);
+		// printf("is_timenow() - philosophers->last_time_to_eat %lld\n", is_timenow() - philosophers->last_time_to_eat);
+		// printf("philosophers->data->time_to_eat: %lld\n", philosophers->data->time_to_eat);
+		ft_usleep(philosophers->data->time_to_die - (philosophers->data->time_to_eat));
+		pthread_mutex_lock(&philosophers->data->dead_mutex);  // Lock 'dead_mutex'
+		philosophers->data->dead = true;
+		pthread_mutex_unlock(&philosophers->data->dead_mutex);  // Unlock 'dead_mutex'
+		printing(philosophers, "died");
+	}
+	else
+	{
+		printing(philosophers, "is sleeping");
+		ft_usleep(philosophers->data->time_to_sleep);
+	}
+}
 
+void	thinking_cycle(t_philosophers *philosophers)
+{
+	check_death(philosophers);
+	printing(philosophers, "is thinking");
 }
 
 bool	is_philosopher_dead(t_philosophers *philosophers)
@@ -45,7 +64,6 @@ bool	is_philosopher_dead(t_philosophers *philosophers)
 	pthread_mutex_lock(&philosophers->data->dead_mutex);  // Lock 'dead_mutex'
 	is_dead = philosophers->data->dead;
 	pthread_mutex_unlock(&philosophers->data->dead_mutex);  // Unlock 'dead_mutex'
-
 	return is_dead;
 }
 
@@ -54,30 +72,20 @@ void	*routine(void *arg)
 	t_philosophers	*philosophers = (t_philosophers *)arg;
 	sync_start(philosophers);
 	if (philosophers->id % 2 != 0) // if philosopher's id is odd, let them sleep first.
+	{
+		check_death(philosophers);
+		printing(philosophers, "is thinking");
 		ft_usleep(philosophers->data->time_to_eat);
+	}
 	while (1)
 	{
-		// if (philosophers->id % 2 == 0)
-		// {
 		eating_cycle(philosophers);
 		if (is_philosopher_dead(philosophers))
 			break;
 		sleeping_cycle(philosophers);
 		if (is_philosopher_dead(philosophers))
 			break;
-		// }
-		// else
-		// {
-		// 	sleeping_cycle(philosophers);
-		// 	if (is_philosopher_dead(philosophers))
-		// 		break;
-		// 	eating_cycle(philosophers);
-		// 	if (is_philosopher_dead(philosophers))
-		// 		break;
-		// }
-		printing(philosophers, "is thinking");
-		check_death(philosophers);
-		// printf("Philosopher  says hi\n");
+		thinking_cycle(philosophers);
 		if (is_philosopher_dead(philosophers))
 			break;
 	}
