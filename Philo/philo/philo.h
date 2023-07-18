@@ -6,19 +6,19 @@
 /*   By: lhasmi <lhasmi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/07 20:15:50 by lhasmi            #+#    #+#             */
-/*   Updated: 2023/07/17 21:31:38 by lhasmi           ###   ########.fr       */
+/*   Updated: 2023/07/18 18:48:42 by lhasmi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef PHILO_H
 # define PHILO_H
 
+# include <stdbool.h>
 # include <pthread.h>
 # include <stdio.h>
 # include <stdlib.h>
 # include <string.h>
 # include <unistd.h>
-# include <stdbool.h>
 # include <sys/time.h>
 
 
@@ -46,9 +46,11 @@ typedef struct s_data
 	int					meals_required;
 	int					num_philosophers;
 	long long			start;
+	bool				initialized;
 	pthread_mutex_t		write;
 	pthread_mutex_t		dead_mutex;  // New mutex for protecting 'dead' variable
 	pthread_mutex_t		eat_mutex;
+	pthread_mutex_t		init_mutex;
 }				t_data;
 
 void				*routine(void *arg);
@@ -58,7 +60,7 @@ bool				is_philosopher_dead(t_philosophers *philosophers);
 void				initialize_philosophers_and_forks(t_philosophers *philosophers, t_data *data, pthread_mutex_t *forks, int num_philosophers);
 
 /////////// philooutils.c  /////////
-bool				all_alive(t_philosophers *philosophers, int num_philosophers);
+bool				check_full(t_philosophers *philosophers);
 void				sync_start(t_philosophers *philosophers);
 long long			is_timenow(void);
 void				ft_usleep(long time);

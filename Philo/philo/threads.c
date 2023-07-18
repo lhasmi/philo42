@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   threads.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lhasmi <lhasmi@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: lhasmi <lhasmi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/07 20:00:27 by lhasmi            #+#    #+#             */
-/*   Updated: 2023/07/18 14:44:29 by lhasmi           ###   ########.fr       */
+/*   Updated: 2023/07/18 20:37:41 by lhasmi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,16 +15,19 @@
 void	eating_cycle(t_philosophers *philosophers)
 {
 	check_death(philosophers);
+	if (check_full(philosophers) == true)
+		exit(1);
 	pthread_mutex_lock(philosophers->left_fork);
 	pthread_mutex_lock(philosophers->right_fork);
 	printing(philosophers, "is eating");
 
 	// pthread_mutex_lock(&philosophers->data->eat_mutex);  // Lock 'eat_mutex'
-	philosophers->last_time_to_eat = is_timenow();//+ time to sleep > time to die
+	philosophers->last_time_to_eat = is_timenow();
 	// pthread_mutex_unlock(&philosophers->data->eat_mutex);  // Unlock 'eat_mutex'
 	if(!is_philosopher_dead(philosophers))
 		philosophers->nb_eat++;
 	ft_usleep(philosophers->data->time_to_eat);
+	// printf( "philosophers->id %d, philosophers->nb_eat %d\n", philosophers->id, philosophers->nb_eat);
 	pthread_mutex_unlock(philosophers->left_fork);
 	pthread_mutex_unlock(philosophers->right_fork);
 }
@@ -76,9 +79,9 @@ void	*routine(void *arg)
 	sync_start(philosophers);
 	if (philosophers->id % 2 != 0) // if philosopher's id is odd, let them sleep first.
 	{
-		check_death(philosophers);
-		printing(philosophers, "is thinking");
-		ft_usleep(philosophers->data->time_to_eat);
+		// check_death(philosophers);
+		// printing(philosophers, "is thinking");
+		ft_usleep(philosophers->data->time_to_eat - 1);
 	}
 	while (1)
 	{
@@ -107,8 +110,7 @@ void	initialize_philosophers_and_forks(t_philosophers *philosophers, t_data *dat
 	pthread_mutex_init(&data->write, NULL);
 	pthread_mutex_init(&data->dead_mutex, NULL);
 	pthread_mutex_init(&data->eat_mutex, NULL);
-
-	data->start = is_timenow();
+	pthread_mutex_init(&data->init_mutex, NULL);
 	i = 0;
 	while (i < num_philosophers)
 	{
@@ -123,7 +125,38 @@ void	initialize_philosophers_and_forks(t_philosophers *philosophers, t_data *dat
 			exit(2);
 		i++;
 	}
+	printf("All philosophers have been created.\n");
+	pthread_mutex_lock(&data->init_mutex);
+	data->start = is_timenow();
+	data->initialized = true;
+	pthread_mutex_unlock(&data->init_mutex);
 }
+
+void one_philosopher(t_philosophers *philosophers, t_data *data, pthread_mutex_t *forks)
+{
+	pthread_mutex_init(&forks[0], NULL);
+	pthread_mutex_init(&data->dead_mutex, NULL);
+	pthread_mutex_init(&data->init_mutex, NULL);
+	philosophers[0].id = 1;
+	philosophers[0].left_fork = &forks[0];
+	philosophers[0].right_fork = &forks[0];
+	philosophers[0].data = data;
+	philosophers[0].last_time_to_eat = data->start;
+	philosophers[0].nb_eat = 0;
+	if (pthread_create(&philosophers[0].thread, NULL, &routine,
+			&philosophers[0]) != 0)
+		exit(2);
+	pthread_mutex_lock(&data->init_mutex);
+	data->start = is_timenow();
+	data->initialized = true;
+	pthread_mutex_unlock(&data->init_mutex);
+	pthread_mutex_lock(&philosophers->data->dead_mutex);  // Lock 'dead_mutex'
+	philosophers->data->dead = true;
+	pthread_mutex_unlock(&philosophers->data->dead_mutex);  // Unlock 'dead_mutex'
+	printing(philosophers, "died");
+
+}
+
 
 int	main(int argc, char *argv[])
 {
@@ -146,11 +179,17 @@ int	main(int argc, char *argv[])
 	data->time_to_eat = atoll(argv[3]);
 	data->time_to_sleep = atoll(argv[4]);
 	data->meals_required = (argc == 6) ? atoll(argv[5]) : -1;
+	data->initialized = false;
 	t_philosophers	*philosophers = (t_philosophers *)malloc(sizeof(t_philosophers) * num_philosophers);
 	if (philosophers == NULL)
 	{
 		perror("Failed to allocate memory for philosophers");
 		return -1;
+	}
+	if (num_philosophers == 1)
+	{
+		one_philosopher(philosophers, data, forks);
+		return (0);
 	}
 	initialize_philosophers_and_forks(philosophers, data, forks, num_philosophers);
 	int i = 0;

@@ -3,32 +3,29 @@
 /*                                                        :::      ::::::::   */
 /*   philoutils.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lhasmi <lhasmi@student.42heilbronn.de>     +#+  +:+       +#+        */
+/*   By: lhasmi <lhasmi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/16 20:39:40 by lhasmi            #+#    #+#             */
-/*   Updated: 2023/07/18 14:50:07 by lhasmi           ###   ########.fr       */
+/*   Updated: 2023/07/18 18:59:00 by lhasmi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
 
-// bool all_alive(t_philosophers *philosophers, int num_philosophers)
-// {
-// 	int i = 0;
-// 	while (i < num_philosophers)
-// 	{
-// 		if (is_philosopher_dead(&philosophers[i]))
-// 			return false;
-// 		i++;
-// 	}
-// 	return true;
-// }
+bool	check_full( t_philosophers *philosophers)
+{
+	if (philosophers->nb_eat == philosophers->data->meals_required)
+		return (true);
+	else
+		return (false);
+}
 
 void	sync_start(t_philosophers *philosophers)
 {
-	while (is_timenow() < philosophers->data->start)
-		continue;
+	while (philosophers->data->initialized == false)
+		usleep(1);
+	philosophers->last_time_to_eat = is_timenow();
 }
 
 long long	is_timenow(void)
@@ -45,7 +42,7 @@ void	ft_usleep(long time)
 
 	start_time = is_timenow();
 	while (is_timenow() < time + start_time)
-		usleep(10);
+		usleep(200);
 }
 
 void	printing(t_philosophers *philosopher, char *msg)
@@ -71,9 +68,9 @@ void	check_death(t_philosophers *philosophers)
 { // Lock 'eat_mutex'
 	long long time_since_last_eat = is_timenow() - philosophers->last_time_to_eat;
 	long long time_since_start = is_timenow() - philosophers->data->start;
-	printf("philo id %d  time since start: %lld\n", philosophers->id, time_since_start);
+	// printf("time since last eat %lld and time since start: %lld\n", time_since_last_eat, time_since_start);
 	// printf("Philosopher  says hi before if\n");
-	printf("Philosopher %d  and nb_eat is %d\n", philosophers->id, philosophers->nb_eat);
+	// printf("Philosopher %d  and nb_eat is %d\n", philosophers->id, philosophers->nb_eat);
 	if (time_since_last_eat > philosophers->data->time_to_die || (time_since_start > philosophers->data->time_to_die && philosophers->nb_eat == 0))
 	{
 		// printf("philo id %d  time since last eat: %lld\n", philosophers->id, time_since_last_eat);
@@ -97,6 +94,7 @@ void	clean_up(t_philosophers *philosophers, t_data *data, pthread_mutex_t *forks
 	pthread_mutex_destroy(&data->write);
 	pthread_mutex_destroy(&data->dead_mutex);   // Destroy 'dead_mutex'
 	pthread_mutex_destroy(&data->eat_mutex);    // Destroy 'eat_mutex'
+	pthread_mutex_destroy(&data->init_mutex);   // Destroy 'init_mutex'
 	free(philosophers);
 	free(data);
 }
