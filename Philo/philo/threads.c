@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   threads.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lhasmi <lhasmi@student.42.fr>              +#+  +:+       +#+        */
+/*   By: lhasmi <lhasmi@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/07 20:00:27 by lhasmi            #+#    #+#             */
-/*   Updated: 2023/07/17 22:43:35 by lhasmi           ###   ########.fr       */
+/*   Updated: 2023/07/18 14:44:29 by lhasmi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,15 +33,18 @@ void	eating_cycle(t_philosophers *philosophers)
 void	sleeping_cycle(t_philosophers *philosophers)
 {
 	check_death(philosophers);
-	if(philosophers->last_time_to_eat + philosophers->data->time_to_sleep > philosophers->data->time_to_die)
+	long long time_since_last_eat = is_timenow() - philosophers->last_time_to_eat;
+	if(time_since_last_eat + philosophers->data->time_to_sleep > philosophers->data->time_to_die)
 	{
 		// printf("philosophers->data->time_to_die: %lld\n", philosophers->data->time_to_die);
-		// printf("is_timenow() - philosophers->last_time_to_eat %lld\n", is_timenow() - philosophers->last_time_to_eat);
+		// printf("time_since_last_eat %lld\n", time_since_last_eat);
+		// printf("philosophers->data->time_to_sleep %lld\n", philosophers->data->time_to_sleep);
 		// printf("philosophers->data->time_to_eat: %lld\n", philosophers->data->time_to_eat);
 		ft_usleep(philosophers->data->time_to_die - (philosophers->data->time_to_eat));
 		pthread_mutex_lock(&philosophers->data->dead_mutex);  // Lock 'dead_mutex'
 		philosophers->data->dead = true;
 		pthread_mutex_unlock(&philosophers->data->dead_mutex);  // Unlock 'dead_mutex'
+		// printf("Philosopher  says hi inside the lorenzocase if\n");
 		printing(philosophers, "died");
 	}
 	else

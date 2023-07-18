@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   philoutils.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lhasmi <lhasmi@student.42.fr>              +#+  +:+       +#+        */
+/*   By: lhasmi <lhasmi@student.42heilbronn.de>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/16 20:39:40 by lhasmi            #+#    #+#             */
-/*   Updated: 2023/07/17 22:25:37 by lhasmi           ###   ########.fr       */
+/*   Updated: 2023/07/18 14:50:07 by lhasmi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,13 +71,12 @@ void	check_death(t_philosophers *philosophers)
 { // Lock 'eat_mutex'
 	long long time_since_last_eat = is_timenow() - philosophers->last_time_to_eat;
 	long long time_since_start = is_timenow() - philosophers->data->start;
-	// printf("philo id %d  time since start: %lld\n", philosophers->id, time_since_start);
+	printf("philo id %d  time since start: %lld\n", philosophers->id, time_since_start);
 	// printf("Philosopher  says hi before if\n");
-
+	printf("Philosopher %d  and nb_eat is %d\n", philosophers->id, philosophers->nb_eat);
 	if (time_since_last_eat > philosophers->data->time_to_die || (time_since_start > philosophers->data->time_to_die && philosophers->nb_eat == 0))
 	{
 		// printf("philo id %d  time since last eat: %lld\n", philosophers->id, time_since_last_eat);
-		// printf("Philosopher %d died and nb_eat is %d\n", philosophers->id, philosophers->nb_eat);
 		pthread_mutex_lock(&philosophers->data->dead_mutex);  // Lock 'dead_mutex'
 		philosophers->data->dead = true;
 		pthread_mutex_unlock(&philosophers->data->dead_mutex);  // Unlock 'dead_mutex'
