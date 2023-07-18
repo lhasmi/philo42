@@ -6,7 +6,7 @@
 /*   By: lhasmi <lhasmi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/07 20:00:27 by lhasmi            #+#    #+#             */
-/*   Updated: 2023/07/18 20:37:41 by lhasmi           ###   ########.fr       */
+/*   Updated: 2023/07/18 21:53:58 by lhasmi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,9 +37,11 @@ void	sleeping_cycle(t_philosophers *philosophers)
 {
 	check_death(philosophers);
 	long long time_since_last_eat = is_timenow() - philosophers->last_time_to_eat;
-	if(time_since_last_eat + philosophers->data->time_to_sleep > philosophers->data->time_to_die)
+	// printf("value on the left: %lld\n", time_since_last_eat + philosophers->data->time_to_sleep);
+	// printf("time_since_last_eat: %lld\n", time_since_last_eat);
+	// printf("value on the right: %lld\n", philosophers->data->time_to_die);
+	if((time_since_last_eat + philosophers->data->time_to_sleep > philosophers->data->time_to_die) || (philosophers->data->time_to_eat * 2 > philosophers->data->time_to_die))
 	{
-		// printf("philosophers->data->time_to_die: %lld\n", philosophers->data->time_to_die);
 		// printf("time_since_last_eat %lld\n", time_since_last_eat);
 		// printf("philosophers->data->time_to_sleep %lld\n", philosophers->data->time_to_sleep);
 		// printf("philosophers->data->time_to_eat: %lld\n", philosophers->data->time_to_eat);
@@ -79,8 +81,8 @@ void	*routine(void *arg)
 	sync_start(philosophers);
 	if (philosophers->id % 2 != 0) // if philosopher's id is odd, let them sleep first.
 	{
-		// check_death(philosophers);
-		// printing(philosophers, "is thinking");
+		check_death(philosophers);
+		printing(philosophers, "is thinking");
 		ft_usleep(philosophers->data->time_to_eat - 1);
 	}
 	while (1)
