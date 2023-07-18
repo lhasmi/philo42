@@ -6,7 +6,7 @@
 /*   By: lhasmi <lhasmi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/07 20:15:50 by lhasmi            #+#    #+#             */
-/*   Updated: 2023/07/18 18:48:42 by lhasmi           ###   ########.fr       */
+/*   Updated: 2023/07/18 22:49:51 by lhasmi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,8 @@ void				eating_cycle(t_philosophers *philosophers);
 void				sleeping_cycle(t_philosophers *philosophers);
 bool				is_philosopher_dead(t_philosophers *philosophers);
 void				initialize_philosophers_and_forks(t_philosophers *philosophers, t_data *data, pthread_mutex_t *forks, int num_philosophers);
+void	*routine_one(void *arg);
+void one_philosopher(t_philosophers *philosophers, t_data *data);
 
 /////////// philooutils.c  /////////
 bool				check_full(t_philosophers *philosophers);
