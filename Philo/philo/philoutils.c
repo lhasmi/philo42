@@ -6,7 +6,7 @@
 /*   By: lhasmi <lhasmi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/16 20:39:40 by lhasmi            #+#    #+#             */
-/*   Updated: 2023/07/18 23:17:51 by lhasmi           ###   ########.fr       */
+/*   Updated: 2023/07/19 19:56:56 by lhasmi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ void	printing(t_philosophers *philosopher, char *msg)
 	pthread_mutex_lock(&philosopher->data->write);
 	if (is_philosopher_dead(philosopher))
 	{
+		// printf("Philosopher %d inside if dead printing\n", philosopher->id);
 		printf("%lld %d %s\n",
 			is_timenow() - philosopher->data->start,
 			philosopher->id, msg);
@@ -60,6 +61,7 @@ void	printing(t_philosophers *philosopher, char *msg)
 		printf("%lld %d %s\n",
 			is_timenow() - philosopher->data->start,
 			philosopher->id, msg);
+		// printf("Philosopher %d says hi in second printing\n", philosopher->id);
 	}
 	pthread_mutex_unlock(&philosopher->data->write);
 }
@@ -68,31 +70,32 @@ void	check_death(t_philosophers *philosophers)
 {
 	long long time_since_last_eat = is_timenow() - philosophers->last_time_to_eat;
 	long long time_since_start = is_timenow() - philosophers->data->start;
-	if( philosophers->data->num_philosophers % 2 == 0)
-	{
+	// if( philosophers->data->num_philosophers % 2 == 0)
+	// {
 		if (time_since_last_eat > philosophers->data->time_to_die || (time_since_start > philosophers->data->time_to_die && philosophers->nb_eat == 0))
 		{
 			pthread_mutex_lock(&philosophers->data->dead_mutex);
 			philosophers->data->dead = true;
 			pthread_mutex_unlock(&philosophers->data->dead_mutex);
+			// printf("Philosopher %d says hi after if,\n", philosophers->id);
+			// printf ( "Philosopher %d flag dead %d\n", philosophers->id, philosophers->data->dead);
 			printing(philosophers, "died");
 		}
-	}
-	else if( philosophers->data->num_philosophers % 2 != 0)
-	{
-		if (time_since_last_eat > philosophers->data->time_to_die || (time_since_start > philosophers->data->time_to_die && philosophers->nb_eat == 0)
-			|| (philosophers->data->time_to_eat + (philosophers->data->time_to_sleep * 2) > philosophers->data->time_to_die))
-		{
-			pthread_mutex_lock(&philosophers->data->dead_mutex);
-			philosophers->data->dead = true;
-			pthread_mutex_unlock(&philosophers->data->dead_mutex);
-			printing(philosophers, "died");
-		}
-	}
+	// }
+	// else if( philosophers->data->num_philosophers % 2 != 0)
+	// {
+	// 	if (time_since_last_eat > philosophers->data->time_to_die || (time_since_start > philosophers->data->time_to_die && philosophers->nb_eat == 0)
+	// 		|| (philosophers->data->time_to_eat + (philosophers->data->time_to_sleep * 2) > philosophers->data->time_to_die))
+	// 	{
+	// 		pthread_mutex_lock(&philosophers->data->dead_mutex);
+	// 		philosophers->data->dead = true;
+	// 		pthread_mutex_unlock(&philosophers->data->dead_mutex);
+	// 		printing(philosophers, "died");
+	// 	}
+	// }
 
 }
 
-		// printf("Philosopher  says hi after if\n");
 		// printf("philo id %d  time since last eat: %lld\n", philosophers->id, time_since_last_eat);
 	// printf("time since last eat %lld and time since start: %lld\n", time_since_last_eat, time_since_start);
 	// printf("Philosopher  says hi before if\n");

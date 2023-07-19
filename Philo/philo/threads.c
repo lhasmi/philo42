@@ -6,7 +6,7 @@
 /*   By: lhasmi <lhasmi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/07 20:00:27 by lhasmi            #+#    #+#             */
-/*   Updated: 2023/07/18 22:58:44 by lhasmi           ###   ########.fr       */
+/*   Updated: 2023/07/19 20:06:47 by lhasmi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ void	eating_cycle(t_philosophers *philosophers)
 		exit(1);
 	pthread_mutex_lock(philosophers->left_fork);
 	pthread_mutex_lock(philosophers->right_fork);
+	check_death(philosophers);
 	printing(philosophers, "has taken a fork");
 	printing(philosophers, "is eating");
 
@@ -32,7 +33,6 @@ void	eating_cycle(t_philosophers *philosophers)
 	pthread_mutex_unlock(philosophers->left_fork);
 	pthread_mutex_unlock(philosophers->right_fork);
 }
-
 
 void	sleeping_cycle(t_philosophers *philosophers)
 {
