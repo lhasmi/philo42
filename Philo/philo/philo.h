@@ -6,7 +6,7 @@
 /*   By: lhasmi <lhasmi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/07 20:15:50 by lhasmi            #+#    #+#             */
-/*   Updated: 2023/07/20 04:38:16 by lhasmi           ###   ########.fr       */
+/*   Updated: 2023/07/20 18:13:20 by lhasmi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,12 +56,21 @@ typedef struct s_data
 	pthread_mutex_t		init_mutex;
 }						t_data;
 
-void					eating_cycle(t_philosophers *philosophers);
-void					sleeping_cycle(t_philosophers *philosophers);
-bool					is_philosopher_dead(t_philosophers *philosophers);
+/////////// init.c  /////////
+t_data					*init_data(int argc, char **argv);
+t_philosophers			*malloc_philosophers(int num_philosophers);
+void					initialize_mutexes(t_data *data, pthread_mutex_t *forks,
+							int num_philosophers);
+void					initialize_philosophers(t_philosophers *philosophers, t_data *data,
+							pthread_mutex_t *forks, int num_philosophers);
 void					init_philosophers_and_forks(t_philosophers *philosophers,
 							t_data *data, pthread_mutex_t *forks,
 							int num_philosophers);
+
+/////////// threads.c  /////////
+void					eating_cycle(t_philosophers *philosophers);
+void					sleeping_cycle(t_philosophers *philosophers);
+bool					is_philosopher_dead(t_philosophers *philosophers);
 
 /////////// threads_bis.c  /////////
 void					*routine(void *arg);
@@ -82,16 +91,8 @@ bool					check_full(t_philosophers *philosophers);
 void					check_death(t_philosophers *philosophers);
 void					clean_up(t_philosophers *philosophers, t_data *data,
 							pthread_mutex_t *forks, int num_philosophers);
-void					initialize_philosophers_and_forks(t_philosophers *philosophers,
-							t_data *data, pthread_mutex_t *forks,
-							int num_philosophers);
-void					initialize_mutexes(t_data *data, pthread_mutex_t *forks,
-							int num_philosophers);
-t_data					*init_data(int argc, char *argv[]);
-t_philosophers			*init_philosophers(int num_philosophers);
 void					join_threads(t_philosophers *philosophers,
 							int num_philosophers);
-int						parser(char *argv[], int argc, char ***args);
 
 /////////// libft files  /////////
 bool					ft_isint(char *arg);
@@ -106,8 +107,8 @@ size_t					ft_strlcpy(char *dst, const char *src, size_t dstsize);
 size_t					ft_wcount(const char *str, char del);
 int						invalid_arg(int j, char **args, char *argv[]);
 int						check_input(char *argv[], int argc, char ***args);
-void					check_arguments_and_parse(int argc, char *argv[],
-							char ***args);
-int						ft_isdigit(int c);
+void					check_arguments_and_parse(int argc, char **argv);
+int						ft_atoi(const char *str);
+void					is_input_error(char **s, int arg_count);
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: lhasmi <lhasmi@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/07 20:00:27 by lhasmi            #+#    #+#             */
-/*   Updated: 2023/07/20 03:14:46 by lhasmi           ###   ########.fr       */
+/*   Updated: 2023/07/20 16:46:51 by lhasmi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,64 +67,4 @@ bool	is_philosopher_dead(t_philosophers *philosophers)
 	is_dead = philosophers->data->dead;
 	pthread_mutex_unlock(&philosophers->data->dead_mutex);
 	return (is_dead);
-}
-
-void	initialize_mutexes(t_data *data, pthread_mutex_t *forks,
-		int num_philosophers)
-{
-	int	i;
-
-	i = 0;
-	while (i < num_philosophers)
-	{
-		pthread_mutex_init(&forks[i], NULL);
-		i++;
-	}
-	pthread_mutex_init(&data->write, NULL);
-	pthread_mutex_init(&data->dead_mutex, NULL);
-	pthread_mutex_init(&data->eat_mutex, NULL);
-	pthread_mutex_init(&data->init_mutex, NULL);
-}
-
-void	initialize_philosophers(t_philosophers *philosophers, t_data *data,
-		pthread_mutex_t *forks, int num_philosophers)
-{
-	int	i;
-
-	i = 0;
-	while (i < num_philosophers)
-	{
-		philosophers[i].id = i + 1;
-		philosophers[i].left_fork = &forks[i];
-		philosophers[i].right_fork = &forks[(i + 1) % num_philosophers];
-		philosophers[i].data = data;
-		philosophers[i].last_time_to_eat = data->start;
-		philosophers[i].end_last_lunch = data->start;
-		philosophers[i].start_last_lunch = data->start;
-		philosophers[i].nb_eat = 0;
-		if (num_philosophers == 1)
-		{
-			if (pthread_create(&philosophers[i].thread, NULL, &routine_one,
-					&philosophers[i]) != 0)
-				exit(2);
-		}
-		else
-		{
-			if (pthread_create(&philosophers[i].thread, NULL, &routine,
-					&philosophers[i]) != 0)
-				exit(2);
-		}
-		i++;
-	}
-	pthread_mutex_lock(&data->init_mutex);
-	data->start = is_timenow();
-	data->initialized = true;
-	pthread_mutex_unlock(&data->init_mutex);
-}
-
-void	init_philosophers_and_forks(t_philosophers *philosophers,
-		t_data *data, pthread_mutex_t *forks, int num_philosophers)
-{
-	initialize_mutexes(data, forks, num_philosophers);
-	initialize_philosophers(philosophers, data, forks, num_philosophers);
 }
